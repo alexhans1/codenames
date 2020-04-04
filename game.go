@@ -120,6 +120,7 @@ type Game struct {
 	WinningTeam  *Team     `json:"winning_team,omitempty"`
 	Words        []string  `json:"words"`
 	Layout       []Team    `json:"layout"`
+	EndTime      time.Time `json:"end_time"`
 
 	mu        sync.Mutex
 	marshaled []byte
@@ -179,6 +180,7 @@ func (g *Game) NextTurn() error {
 		return errors.New("game is already over")
 	}
 	g.Round++
+	g.EndTime = getEndTime(1, 0)
 	return nil
 }
 
@@ -215,6 +217,10 @@ func (g *Game) currentTeam() Team {
 	return g.StartingTeam.Other()
 }
 
+func getEndTime(minutes int, seconds int) time.Time {
+	return time.Now().Add(time.Minute * time.Duration(minutes)).Add(time.Second * time.Duration(seconds))
+}
+
 func newGame(id string, state GameState) *Game {
 	rnd := rand.New(rand.NewSource(state.Seed))
 	game := &Game{
@@ -224,6 +230,7 @@ func newGame(id string, state GameState) *Game {
 		Words:        make([]string, 0, wordsPerGame),
 		Layout:       make([]Team, 0, wordsPerGame),
 		GameState:    state,
+		EndTime:      getEndTime(1, 0),
 	}
 
 	// Pick 25 random words.

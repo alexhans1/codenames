@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Settings, SettingsButton, SettingsPanel } from '~/ui/settings';
+import Timer from '~/ui/timer';
 
 // TODO: remove jquery dependency
 // https://stackoverflow.com/questions/47968529/how-do-i-use-jquery-and-jquery-ui-with-parcel-bundler
@@ -122,8 +123,8 @@ export class Game extends React.Component {
         game_id: this.state.game.id,
         state_id: this.state.game.state_id,
       }),
-      g => {
-        this.setState({ game: g });
+      game => {
+        this.setState({ game });
       }
     );
   }
@@ -131,10 +132,9 @@ export class Game extends React.Component {
   public nextGame(e) {
     e.preventDefault();
     // Ask for confirmation when current game hasn't finished
-    let allowNextGame = (
+    let allowNextGame =
       this.state.game.winning_team ||
-      confirm("Do you really want to start a new game?")
-    );
+      confirm('Do you really want to start a new game?');
     if (!allowNextGame) {
       return;
     }
@@ -222,13 +222,24 @@ export class Game extends React.Component {
     if (!this.state.settings.fullscreen) {
       shareLink = (
         <div id="share">
-          Send this link to friends:
+          Send this link to friendssss:
           <a className="url" href={window.location.href}>
             {window.location.href}
           </a>
         </div>
       );
     }
+
+    const timer = (this.state.settings.timer || true) && (
+      <div id="timer">
+        <Timer
+          endTime={new Date(this.state.game.end_time).getTime() + 1000}
+          handleExpiration={() => {
+            this.endTurn();
+          }}
+        />
+      </div>
+    );
 
     return (
       <div
@@ -238,7 +249,10 @@ export class Game extends React.Component {
           this.extraClasses()
         }
       >
-        {shareLink}
+        <div id="infoContent">
+          {shareLink}
+          {timer}
+        </div>
         <div id="status-line" className={statusClass}>
           <div id="remaining">
             <span className={this.state.game.starting_team + '-remaining'}>
@@ -297,7 +311,11 @@ export class Game extends React.Component {
             Next game
           </button>
         </form>
-        <div id="coffee"><a href="https://www.buymeacoffee.com/jbowens">Buy the developer a coffee.</a></div>
+        <div id="coffee">
+          <a href="https://www.buymeacoffee.com/jbowens">
+            Buy the developer a coffee.
+          </a>
+        </div>
       </div>
     );
   }
